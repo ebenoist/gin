@@ -41,10 +41,10 @@ type (
 	Engine struct {
 		*RouterGroup
 		HTMLRender   render.Render
+		Router       *httprouter.Router
 		cache        sync.Pool
 		finalNoRoute []HandlerFunc
 		noRoute      []HandlerFunc
-		router       *httprouter.Router
 	}
 )
 
@@ -68,8 +68,8 @@ func (engine *Engine) handle404(w http.ResponseWriter, req *http.Request) {
 func New() *Engine {
 	engine := &Engine{}
 	engine.RouterGroup = &RouterGroup{nil, "/", nil, engine}
-	engine.router = httprouter.New()
-	engine.router.NotFound = engine.handle404
+	engine.Router = httprouter.New()
+	engine.Router.NotFound = engine.handle404
 	engine.cache.New = func() interface{} {
 		c := &Context{Engine: engine}
 		c.Writer = &c.writermem
@@ -122,7 +122,7 @@ func (engine *Engine) Use(middlewares ...HandlerFunc) {
 
 // ServeHTTP makes the router implement the http.Handler interface.
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	engine.router.ServeHTTP(w, req)
+	engine.Router.ServeHTTP(w, req)
 }
 
 func (engine *Engine) Run(addr string) {
@@ -192,7 +192,7 @@ func (group *RouterGroup) Handle(method, p string, handlers []HandlerFunc) {
 		name := funcName(handlers[nuHandlers-1])
 		fmt.Printf("[GIN-debug] %-5s %-25s --> %s (%d handlers)\n", method, p, name, nuHandlers)
 	}
-	group.engine.router.Handle(method, p, func(w http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	group.engine.Router.Handle(method, p, func(w http.ResponseWriter, req *http.Request, params httprouter.Params) {
 		c := group.engine.createContext(w, req, params, handlers)
 		c.Next()
 		c.Writer.WriteHeaderNow()

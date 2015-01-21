@@ -33,7 +33,7 @@ func (c *Context) ParseBody(item interface{}) error {
 // use http.Dir:
 //     router.ServeFiles("/src/*filepath", http.Dir("/var/www"))
 func (engine *Engine) ServeFiles(path string, root http.FileSystem) {
-	engine.router.ServeFiles(path, root)
+	engine.Router.ServeFiles(path, root)
 }
 
 // DEPRECATED use gin.LoadHTMLGlob() or gin.LoadHTMLFiles() instead
